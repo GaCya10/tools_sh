@@ -2,6 +2,7 @@
 
 CMD=$1
 DOMAIN=$2
+PASSWORD=$3
 
 CONFIG_FILE=/usr/local/etc/trojan/config.json
 
@@ -231,7 +232,7 @@ cat >$CONFIG_FILE<<-EOF
     "remote_addr": "127.0.0.1",
     "remote_port": 80,
     "password": [
-        "jiacheng"
+        "$3"
     ],
     "log_level": 1,
     "ssl": {
@@ -280,4 +281,4 @@ EOF
 systemctl enable trojan
 systemctl restart trojan
 
-
+_sep "Finish!"
