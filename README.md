@@ -1,1 +1,1 @@
-Some useful sh for linux startup
+Some useful shell scripts for linux startup

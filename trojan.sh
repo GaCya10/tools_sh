@@ -281,4 +281,4 @@ EOF
 systemctl enable trojan
 systemctl restart trojan
 
-_sep "Finish!"
+_sep "Finish! Done!"
