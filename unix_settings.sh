@@ -29,8 +29,9 @@ else
 fi
 
 if [ $OS = "Amazon" ]; then
-    yum install util-linux-user
+    $cmd_install util-linux-user
     amazon-linux-extras install epel
+    $cmd_update
 fi
 
 _hr "preinstall"
