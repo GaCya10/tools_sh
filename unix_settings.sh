@@ -1,11 +1,11 @@
 #!/bin/bash
 # the basic tool for a new unix 
 
-_hr() {
+__delimiter() {
     echo "=============$1==============="
 }
 
-OS=`hostnamectl | grep System | awk -F ':' '{print $2}' | awk '{print $1}'`
+OS=`hostnamectl | grep System | awk '{print $3}'`
 
 res=`which yum 2>/dev/null`
 if [ $? != "0" ]; then
@@ -29,22 +29,22 @@ else
 fi
 
 if [ $OS = "Amazon" ]; then
-    $cmd_install util-linux-user
-    amazon-linux-extras install epel
     $cmd_update
+    $cmd_install util-linux-user
+    amazon-linux-extras install epel -y
 fi
 
-_hr "preinstall"
+__delimiter "preinstall"
 
 $cmd_install wget vim unzip tar gcc
 $cmd_install zsh git net-tools openssl curl
 
-_hr "install zsh"
+__delimiter "install zsh"
 
 curl -L https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh | sh
 chsh -s /bin/zsh
 
-_hr "configing"
+__delimiter "configing"
 
 touch ~/.vimrc
 cat > "/root/.vimrc" << EOF
@@ -118,18 +118,18 @@ set listchars=tab:»■,trail:■
 set wildmenu
 set wildmode=longest:list,full
 
-set clipboard+=unnamed
+set clipboard=unnamed
 
 set backspace=2
 EOF
 
 source ~/.zshrc
 
-_hr "install some plug-in"
+__delimiter "install some plug-in"
 
 git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
-git clone git://github.com/zsh-users/zsh-autosuggestions $ZSH_CUSTOM/plugins/zsh-autosuggestions
-git clone https://github.com/paulirish/git-open.git $ZSH_CUSTOM/plugins/git-open
+git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
+git clone https://github.com/paulirish/git-open.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/git-open
 
 if [ ! -d ~/repo ]; then
     mkdir -p -v ~/repo
@@ -144,4 +144,4 @@ cp molokai/colors/molokai.vim ~/.vim/colors
 
 sed -i 's/^plugins=(git)$/plugins=(\ngit\nzsh-autosuggestions\nzsh-syntax-highlighting\ngit-open\n)/' ~/.zshrc
 
-_hr "Done"
+__delimiter "Done"
