@@ -90,7 +90,7 @@ mkdir -p /usr/share/nginx/html
 if [ ! -f /etc/nginx/nginx.conf.bak ]; then
      mv /etc/nginx/nginx.conf /etc/nginx/nginx.conf.bak
 fi
-res=`id nginx 2>/dev/null`
+res=$(id nginx 2>/dev/null)
 if [[ "$?" != "0" ]]; then
     user="www-data"
 else
@@ -223,6 +223,8 @@ echo Deleting temp directory $TMPDIR...
 rm -rf "$TMPDIR"
 
 ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+
+
 touch $CONFIG_FILE
 cat >$CONFIG_FILE<<-EOF
 {
@@ -232,7 +234,7 @@ cat >$CONFIG_FILE<<-EOF
     "remote_addr": "127.0.0.1",
     "remote_port": 80,
     "password": [
-        "$3"
+        "$PASSWORD"
     ],
     "log_level": 1,
     "ssl": {
