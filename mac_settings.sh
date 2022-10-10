@@ -1,53 +1,29 @@
 #!/bin/bash
-# the basic tool for a new unix 
+# the basic tool for MacOS
 
 _hr() {
     echo "=============$1==============="
 }
 
-OS=`hostnamectl | grep System | awk -F ':' '{print $2}' | awk '{print $1}'`
-
-res=`which yum 2>/dev/null`
-if [ $? != "0" ]; then
-	res=`which apt 2>/dev/null`
-	if [ $? != "0" ]; then
-		echo "It's not a unix-like system"
-		exit 1
-	fi
-	cmd=apt
-	cmd_install="apt install -y "
-	cmd_update="apt update; apt upgrade -y"
-	cmd_remove="apt remove -y "
-	$cmd_update
-else
-	cmd=yum
-	cmd_install="yum install -y "
-	cmd_update="yum update -y"
-	cmd_remove="yum remove -y "
-	$cmd_update
-	$cmd_install epel-release
-fi
-
-if [ $OS = "Amazon" ]; then
-    $cmd_install util-linux-user
-    amazon-linux-extras install epel
-    $cmd_update
-fi
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+# cmd=brew
+cmd_install="brew install "
+# cmd_remove="brew remove "
 
 _hr "preinstall"
 
-$cmd_install wget vim unzip tar gcc
-$cmd_install zsh git net-tools openssl curl
+# $cmd_install wget vim unzip tar gcc
+# $cmd_install zsh gnu-sed git net-tools openssl curl 
 
 _hr "install zsh"
 
-curl -L https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh | sh
+/bin/bash -c "$(curl -fsSL https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh)"
 chsh -s /bin/zsh
 
 _hr "configing"
 
 touch ~/.vimrc
-cat > "/root/.vimrc" << EOF
+cat > "$HOME"/.vimrc << EOF
 set nocompatible
 
 syntax on
@@ -123,18 +99,19 @@ set clipboard+=unnamed
 set backspace=2
 EOF
 
-source ~/.zshrc
+#source "$HOME"/.zshrc
 
 _hr "install some plug-in"
 
 git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
-git clone git://github.com/zsh-users/zsh-autosuggestions $ZSH_CUSTOM/plugins/zsh-autosuggestions
-git clone https://github.com/paulirish/git-open.git $ZSH_CUSTOM/plugins/git-open
+git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
+git clone https://github.com/paulirish/git-open.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/git-open
 
-if [ ! -d ~/repo ]; then
-    mkdir -p -v ~/repo
+if [ ! -d ~/Repo/settings ]; then
+    mkdir -p -v ~/repo/settings
 fi
-cd /root/repo
+cd ~/repo/settings || exit
+
 git clone https://github.com/tomasr/molokai.git
 
 if [ ! -d ~/.vim/colors ]; then
@@ -142,6 +119,6 @@ if [ ! -d ~/.vim/colors ]; then
 fi
 cp molokai/colors/molokai.vim ~/.vim/colors
 
-sed -i 's/^plugins=(git)$/plugins=(\ngit\nzsh-autosuggestions\nzsh-syntax-highlighting\ngit-open\n)/' ~/.zshrc
+gsed -i 's/^plugins=(git)$/plugins=(\ngit\nzsh-autosuggestions\nzsh-syntax-highlighting\ngit-open\n)/' ~/.zshrc
 
 _hr "Done"
