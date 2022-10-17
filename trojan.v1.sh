@@ -1,9 +1,5 @@
 #!/bin/bash
 
-DOMAIN=$1
-PASSWORD=$2
-EMAIL=$3
-
 RED="\033[31m"    # Error message
 GREEN="\033[32m"  # Success message
 YELLOW="\033[33m" # Warning message
@@ -11,9 +7,29 @@ BLUE="\033[36m"   # Info message
 PLAIN='\033[0m'
 
 CONFIG_FILE=/usr/local/etc/trojan/config.json
+IP=$(curl -sL -4 ip.sb)
 
 __INFO() {
     echo -e "# ${GREEN}$1${PLAIN}"
+}
+
+status() {
+    if [[ ! -f /usr/local/bin/trojan ]]; then
+        echo 0
+        return
+    fi
+
+    if [[ ! -f $CONFIG_FILE ]]; then
+        echo 1
+        return
+    fi
+    port=$(grep local_port $CONFIG_FILE|cut -d: -f2| tr -d \",' ')
+    res=$(ss -ntlp| grep ${port} | grep trojan)
+    if [[ -z "$res" ]]; then
+        echo 2
+    else
+        echo 3
+    fi
 }
 
 check() {
@@ -27,13 +43,11 @@ check() {
         CMD=apt
         cmd_install="apt install -y "
         cmd_update="apt update; apt upgrade -y"
-        cmd_remove="apt remove -y "
         $cmd_update
     else
         CMD=yum
         cmd_install="yum install -y "
         cmd_update="yum update -y"
-        cmd_remove="yum remove -y "
         $cmd_update
         $cmd_install epel-release
     fi
@@ -42,6 +56,30 @@ check() {
         $cmd_install util-linux-user amazon-linux-extras install epel -y
     fi
     __INFO "finish checking system"
+}
+
+getData() {
+    echo ""
+    while true
+    do
+        read -p " Please input domain:" DOMAIN
+        if [ -z "${DOMAIN}" ]; then
+            echo " Error, please input again"
+        else
+            break
+        fi
+    done
+    DOMAIN=${DOMAIN,,}
+    __INFO "Input Domain: $DOMAIN"
+
+    echo ""
+    read -p "Input Password:" PASSWORD
+    __INFO " Password: " $PASSWORD
+
+    echo ""
+    read -p "Input Email for cert:" EMAIL
+    __INFO " EMAIL: " $EMAIL
+
 }
 
 installBBR() {
@@ -166,11 +204,20 @@ http {
 }
 EOF
 
+    mkdir -p /usr/share/nginx/html/
+    cd /usr/share/nginx/html || exit
+    git clone https://github.com/GaCya10/VVVenus.git
+    mv VVVenus/css .
+    mv VVVenus/first.html .
+    mv VVVenus/images .
+    mv VVVenus/js .
+    rm -rf VVVenus
+
     NGINX_CONFIG="/etc/nginx/conf.d/"
     mkdir -p $NGING_CONFIG
     c=${NGINX_CONFIG}${DOMAIN}.conf
-    touch $c
-    cat >$c <<-EOF
+    touch "$c"
+    cat >"$c"<<-EOF
 server {
     listen 80;
     listen [::]:80;
@@ -178,11 +225,7 @@ server {
     server_name ${DOMAIN};
     root /usr/share/nginx/html;
     location / {
-        proxy_ssl_server_name on;
-        proxy_pass "https://www.spotify.com";
-        proxy_set_header Accept-Encoding '';
-        sub_filter "www.spotify.com" "$DOMAIN";
-        sub_filter_once off;
+        index first.html;
     }
     location = /robots.txt {}
 }
@@ -352,13 +395,13 @@ server {
 }
 EOF
     nginx -s reload
-    
+
 }
+    
 
 showInfo() {
     res=$(netstat -nltp | grep trojan)
-    [[ -z "$res" ]] && status="${RED}已停止${PLAIN}" || status="${GREEN}正在运行${PLAIN}"
-    echo $status
+    [[ -z "$res" ]] && status="${RED}Stopped${PLAIN}" || status="${GREEN}Running${PLAIN}"
     
     domain=$(grep sni $CONFIG_FILE | cut -d: -f2 | tr -d \",' ')
     if [[ "$domain" = "" ]]; then
@@ -368,54 +411,75 @@ showInfo() {
     line1=$(grep -n 'password' $CONFIG_FILE  | head -n1 | cut -d: -f1)
     line11=$(expr $line1 + 1)
     password=$(sed -n "${line11}p" $CONFIG_FILE | tr -d \",' ')
-    echo $port
-    echo $password
     
     res=$(netstat -nltp | grep ${port} | grep nginx)
-    [[ -z "$res" ]] && ngstatus="${RED}已停止${PLAIN}" || ngstatus="${GREEN}正在运行${PLAIN}"
+    [[ -z "$res" ]] && ngstatus="${RED}Stopped${PLAIN}" || ngstatus="${GREEN}Running${PLAIN}"
     
     echo ============================================
-    echo -e " ${BLUE}trojan运行状态：${PLAIN}${status}"
+    echo -e " ${BLUE}trojan status: ${PLAIN}${status}"
     echo ""
-    echo -e " ${BLUE}trojan配置文件：${PLAIN}${RED}$CONFIG_FILE${PLAIN}"
-    echo -e " ${BLUE}trojan配置信息：${PLAIN}               "
-    echo -e "   ${BLUE}IP/address：${PLAIN} ${RED}$IP${PLAIN}"
-    echo -e "   ${BLUE}域名/SNI/peer名称:${PLAIN}  ${RED}${domain}${PLAIN}"
-    echo -e "   ${BLUE}端口(port)：${PLAIN}${RED}${port}${PLAIN}"
-    echo -e "   ${BLUE}密码(password)：${PLAIN}${RED}$password${PLAIN}"
+    echo -e " ${BLUE}trojan config file: ${PLAIN}${RED}$CONFIG_FILE${PLAIN}"
+    echo -e " ${BLUE}trojan config info: ${PLAIN}               "
+    echo -e "   ${BLUE}IP/address: ${PLAIN} ${RED}$IP${PLAIN}"
+    echo -e "   ${BLUE}Domain/SNI/peer: ${PLAIN}  ${RED}${domain}${PLAIN}"
+    echo -e "   ${BLUE}Port: ${PLAIN}${RED}${port}${PLAIN}"
+    echo -e "   ${BLUE}Password: ${PLAIN}${RED}$password${PLAIN}"
     echo  
     echo ============================================
 }
 
+showLog() {
+    res=$(status)
+    if [[ $res -lt 2 ]]; then
+        echo -e "${RED}Please install Trojan first!${PLAIN}"
+        return
+    fi
+
+    journalctl -xen -u trojan --no-pager
+}
+
 install() {
     check
+    getData
     installBBR
+    installNginx
+    getCert
+    configNginx
+    installTrojan
+    configTrojan
+    showInfo
+}
+
+updateDomain() {
+    check
+    getData
+    configNginx
+    getCert
+    configTrojan
+    showInfo
 }
 
 update() {
     check
-    getCert
-    configNginx
-    configTrojan
+    installTrojan
 }
 
 html() {
-    updateNginx
+    configNginx
 }
 
 menu() {
     clear
     echo "#############################################################"
-    echo -e "#                    ${RED}trojan${PLAIN}                            #"
-    echo -e "# ${GREEN}Anthor${PLAIN}: gacya10@gmail.com                            #"
+    echo -e "#                    ${RED}trojan${PLAIN}                                 #"
+    echo -e "# ${GREEN}Anthor${PLAIN}: gacya10@gmail.com                                 #"
     echo "#############################################################"
     echo ""
     echo -e "  ${GREEN}1.${PLAIN}  show info"
-    echo -e "  ${GREEN}2.${PLAIN}  update trojan"
+    echo -e "  ${GREEN}2.${PLAIN}  update domain"
     echo -e "  ${GREEN}3.${RED}  uninstall trojan${PLAIN}"
-    echo " -------------"
-    echo -e "  ${GREEN}4.${PLAIN}  update nginx"
-    echo -e "  ${GREEN}5.${PLAIN}  update static HTML"
+    echo -e "  ${GREEN}4.${PLAIN}  update static HTML"
+    echo -e "  ${GREEN}5.${PLAIN}  show log"
     read -p "please select[0-5]: " option
     case $option in
     0)
@@ -425,16 +489,16 @@ menu() {
         showInfo
         ;;
     2)
-        echo "option 2"
+        updateDomain
         ;;
     3)
-        echo "option 2"
-        ;;
-    4)
         update
         ;;
-    5)
+    4)
         html
+        ;;
+    5)
+        showLog
         ;;
     *)
         echo "others"
