@@ -10,7 +10,7 @@ CONFIG_FILE=/usr/local/etc/trojan/config.json
 IP=$(curl -sL -4 ip.sb)
 
 __INFO() {
-    echo -e "# ${GREEN}$1${PLAIN}"
+    echo -e "###### ${GREEN}$1${PLAIN}"
 }
 
 status() {
@@ -214,7 +214,7 @@ EOF
     rm -rf VVVenus
 
     NGINX_CONFIG="/etc/nginx/conf.d/"
-    mkdir -p $NGING_CONFIG
+    mkdir -p ${NGINX_CONFIG}
     c=${NGINX_CONFIG}${DOMAIN}.conf
     touch "$c"
     cat >"$c"<<-EOF
@@ -231,9 +231,42 @@ server {
 }
 EOF
 
-    systemctl -restart nginx
+    systemctl restart nginx
     __INFO "finish updating nginx config"
 }
+
+configUserNginx() {
+    
+    mkdir -p /usr/share/nginx/html/
+    cd /usr/share/nginx/html || exit
+    git clone https://github.com/GaCya10/VVVenus.git
+    mv VVVenus/css .
+    mv VVVenus/first.html .
+    mv VVVenus/images .
+    mv VVVenus/js .
+    rm -rf VVVenus
+
+    DOMAIN=$(grep sni $CONFIG_FILE | cut -d: -f2 | tr -d \",' ')
+    NGINX_CONFIG="/etc/nginx/conf.d/"
+    c=${NGINX_CONFIG}${DOMAIN}.conf
+    touch "$c"
+    cat >"$c"<<-EOF
+server {
+    listen 80;
+    listen [::]:80;
+    listen 81 http2;
+    server_name ${DOMAIN};
+    root /usr/share/nginx/html;
+    location / {
+        index first.html;
+    }
+    location = /robots.txt {}
+}
+EOF
+    nginx -s reload
+    __INFO "finish updating nginx config"
+}
+
 
 installTrojan() {
     _sep "install trojan"
@@ -368,37 +401,6 @@ EOF
     __INFO "finish updating trojan config"
 }
 
-updateNginx() {
-    mkdir -p /usr/share/nginx/html/
-    cd /usr/share/nginx/html || exit
-    git clone https://github.com/GaCya10/VVVenus.git
-    mv VVVenus/css .
-    mv VVVenus/first.html .
-    mv VVVenus/images .
-    mv VVVenus/js .
-    rm -rf VVVenus
-
-    NGINX_CONFIG="/etc/nginx/conf.d/"
-    c=${NGINX_CONFIG}${DOMAIN}.conf
-    touch "$c"
-    cat >"$c"<<-EOF
-server {
-    listen 80;
-    listen [::]:80;
-    listen 81 http2;
-    server_name ${DOMAIN};
-    root /usr/share/nginx/html;
-    location / {
-        index first.html;
-    }
-    location = /robots.txt {}
-}
-EOF
-    nginx -s reload
-
-}
-    
-
 showInfo() {
     res=$(netstat -nltp | grep trojan)
     [[ -z "$res" ]] && status="${RED}Stopped${PLAIN}" || status="${GREEN}Running${PLAIN}"
@@ -465,7 +467,7 @@ update() {
 }
 
 html() {
-    configNginx
+    configUserNginx
 }
 
 menu() {
