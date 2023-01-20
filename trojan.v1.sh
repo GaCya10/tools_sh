@@ -74,14 +74,14 @@ getData() {
 
     echo ""
     read -p "Input Password:" PASSWORD
-    __INFO " Password: " $PASSWORD
+    __INFO " Password: $PASSWORD"
 
     echo ""
     read -p "Input Email for cert:" EMAIL
     if [ "$EMAIL" = "" ]; then
         EMAIL="gacya10@gmail.com"
     fi
-    __INFO " EMAIL: " $EMAIL
+    __INFO " EMAIL: $EMAIL"
 }
 
 installBBR() {
@@ -271,7 +271,7 @@ EOF
 
 
 installTrojan() {
-    _sep "install trojan"
+    __INFO "install trojan"
     NAME=trojan
     VERSION=$(curl -fsSL https://api.github.com/repos/trojan-gfw/trojan/releases/latest | grep tag_name | sed -E 's/.*"v(.*)".*/\1/')
     TARBALL="$NAME-$VERSION-linux-amd64.tar.xz"
@@ -442,7 +442,7 @@ showLog() {
     journalctl -xen -u trojan --no-pager
 }
 
-install() {
+installAll() {
     check
     getData
     installBBR
@@ -488,7 +488,7 @@ menu() {
     read -p "please select[0-5]: " option
     case $option in
     0)
-        install
+        installAll
         ;;
     1)
         showInfo
