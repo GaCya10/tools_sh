@@ -78,8 +78,10 @@ getData() {
 
     echo ""
     read -p "Input Email for cert:" EMAIL
+    if [ "$EMAIL" = "" ]; then
+        EMAIL="gacya10@gmail.com"
+    fi
     __INFO " EMAIL: " $EMAIL
-
 }
 
 installBBR() {
@@ -477,15 +479,16 @@ menu() {
     echo -e "# ${GREEN}Anthor${PLAIN}: gacya10@gmail.com                                 #"
     echo "#############################################################"
     echo ""
-    echo -e "  ${GREEN}1.${PLAIN}  show info"
-    echo -e "  ${GREEN}2.${PLAIN}  update domain"
-    echo -e "  ${GREEN}3.${RED}  uninstall trojan${PLAIN}"
-    echo -e "  ${GREEN}4.${PLAIN}  update static HTML"
-    echo -e "  ${GREEN}5.${PLAIN}  show log"
+    echo -e "  ${GREEN}0.${PLAIN}  Install"
+    echo -e "  ${GREEN}1.${PLAIN}  Show Info"
+    echo -e "  ${GREEN}2.${PLAIN}  Update Domain"
+    echo -e "  ${GREEN}3.${RED}  Uninstall Trojan${PLAIN}"
+    echo -e "  ${GREEN}4.${PLAIN}  Update Static HTML"
+    echo -e "  ${GREEN}5.${PLAIN}  Show Log"
     read -p "please select[0-5]: " option
     case $option in
     0)
-        exit 0
+        install
         ;;
     1)
         showInfo
