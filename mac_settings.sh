@@ -107,17 +107,13 @@ git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:
 git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
 git clone https://github.com/paulirish/git-open.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/git-open
 
-if [ ! -d ~/Repo/settings ]; then
-    mkdir -p -v ~/repo/settings
-fi
-cd ~/repo/settings || exit
-
-git clone https://github.com/tomasr/molokai.git
-
 if [ ! -d ~/.vim/colors ]; then
     mkdir -p -v ~/.vim/colors
 fi
+cd ~/.vim/colors
+git clone https://github.com/tomasr/molokai.git
 cp molokai/colors/molokai.vim ~/.vim/colors
+rm -rf molokai
 
 gsed -i 's/^plugins=(git)$/plugins=(\ngit\nzsh-autosuggestions\nzsh-syntax-highlighting\ngit-open\n)/' ~/.zshrc
 
