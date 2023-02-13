@@ -1,0 +1,7 @@
+#!/bin/bash
+
+export http_proxy=http://127.0.0.1:58591
+export https_proxy=http://127.0.0.1:58591
+
+echo $SHELL
+exec ${@:1}
