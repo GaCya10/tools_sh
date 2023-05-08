@@ -42,7 +42,7 @@ chsh -s /bin/zsh
 __delimiter "configing"
 
 touch ~/.vimrc
-cat >"/root/.vimrc" <<EOF
+cat >"~/.vimrc" <<EOF
 set nocompatible
 
 syntax on
@@ -128,7 +128,7 @@ git clone https://github.com/paulirish/git-open.git ${ZSH_CUSTOM:-~/.oh-my-zsh/c
 if [ ! -d ~/repo ]; then
 	mkdir -p -v ~/repo
 fi
-cd /root/repo || exit
+cd ~/repo || exit
 git clone https://github.com/tomasr/molokai.git
 
 if [ ! -d ~/.vim/colors ]; then
