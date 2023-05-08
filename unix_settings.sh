@@ -37,12 +37,12 @@ $cmd_install zsh git net-tools openssl curl
 __delimiter "install zsh"
 
 curl -L https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh | sh
-chsh -s /bin/zsh
+sudo chsh -s /bin/zsh $(whoami)
 
 __delimiter "configing"
 
-touch ~/.vimrc
-cat >"~/.vimrc" <<EOF
+touch "$HOME"/.vimrc
+cat >"$HOME"/.vimrc<<EOF
 set nocompatible
 
 syntax on
@@ -117,25 +117,25 @@ set clipboard=unnamed
 set backspace=2
 EOF
 
-# source ~/.zshrc
+# source "$HOME"/.zshrc
 
 __delimiter "install some plug-in"
 
-git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
-git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
-git clone https://github.com/paulirish/git-open.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/git-open
+git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-"$HOME"/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
+git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-"$HOME"/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
+git clone https://github.com/paulirish/git-open.git ${ZSH_CUSTOM:-"$HOME"/.oh-my-zsh/custom}/plugins/git-open
 
-if [ ! -d ~/repo ]; then
-	mkdir -p -v ~/repo
+if [ ! -d "$HOME"/repo ]; then
+	mkdir -p -v "$HOME"/repo
 fi
-cd ~/repo || exit
+cd "$HOME"/repo || exit
 git clone https://github.com/tomasr/molokai.git
 
-if [ ! -d ~/.vim/colors ]; then
-	mkdir -p -v ~/.vim/colors
+if [ ! -d "$HOME"/.vim/colors ]; then
+	mkdir -p -v "$HOME"/.vim/colors
 fi
-cp molokai/colors/molokai.vim ~/.vim/colors
+cp molokai/colors/molokai.vim "$HOME"/.vim/colors
 
-sed -i 's/^plugins=(git)$/plugins=(\ngit\nzsh-autosuggestions\nzsh-syntax-highlighting\ngit-open\n)/' ~/.zshrc
+sed -i 's/^plugins=(git)$/plugins=(\ngit\nzsh-autosuggestions\nzsh-syntax-highlighting\ngit-open\n)/' "$HOME"/.zshrc
 
 __delimiter "Done"

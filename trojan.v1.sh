@@ -4,13 +4,17 @@ RED="\033[31m"    # Error message
 GREEN="\033[32m"  # Success message
 YELLOW="\033[33m" # Warning message
 BLUE="\033[36m"   # Info message
-PLAIN='\033[0m'
+PLAIN="\033[0m"
 
 CONFIG_FILE=/usr/local/etc/trojan/config.json
 IP=$(curl -sL -4 ip.sb)
 
 __INFO() {
-    echo -e "###### ${GREEN}$1${PLAIN}"
+    echo -e "------------- ${GREEN}$1${PLAIN} ------------"
+}
+
+__ERR() {
+    echo -e "------------- ${RED}$1${PLAIN} ------------"
 }
 
 status() {
@@ -116,7 +120,7 @@ module_hotfixes=true' >/etc/yum.repos.d/nginx.repo
     fi
     $CMD install -y nginx
     if [ $? != "0" ]; then
-        _sep " install nginx failed."
+        __ERR " install nginx failed."
         exit 1
     fi
     systemctl enable nginx
@@ -141,7 +145,7 @@ getCert() {
     ~/.acme.sh/acme.sh --upgrade --auto-upgrade
     ~/.acme.sh/acme.sh --force --issue -d "$DOMAIN" --keylength ec-256 --pre-hook "systemctl stop nginx" --post-hook "systemctl restart nginx" --standalone
     if [ ! -f ~/.acme.sh/"${DOMAIN}"_ecc/ca.cer ]; then
-        _sep " get cert failed"
+        __ERR " get cert failed"
         exit 1
     fi
     mkdir -p /usr/local/etc/trojan/
@@ -152,7 +156,7 @@ getCert() {
         --fullchain-file "$CERT_FILE" \
         --reloadcmd "service nginx force-reload"
     [[ -f $CERT_FILE && -f $KEY_FILE ]] || {
-        _sep " get cert2 failed"
+        __ERR " get cert2 failed"
         exit 1
     }
     __INFO "finish getting cert"
