@@ -144,6 +144,7 @@ sudo sed -i 's/^#ClientAliveInterval.*/ClientAliveInterval 60/' /etc/ssh/sshd_co
 sudo sed -i 's/^#ClientAliveCountMax.*/ClientAliveCountMax 60/' /etc/ssh/sshd_config
 sudo sed -i 's/^#TCPKeepAlive.*/TCPKeepAlive yes/' /etc/ssh/sshd_config
 
-sudo sed -i 's/^PROMPT.*/PROMPT="[%{$fg[white]%}%n@%{$fg[green]%}%m%{$reset_color%}] ${PROMPT}"/' "$HOME"/.zshrc
+sudo sed -i '/^PROMPT/d' ~/.zshrc
+sudo echo 'PROMPT="[%{$fg[white]%}%n@%{$fg[green]%}%m%{$reset_color%}] ${PROMPT}"' >>  "$HOME"/.zshrc
 
 __delimiter "Done"
