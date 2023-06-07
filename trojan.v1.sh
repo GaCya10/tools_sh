@@ -46,8 +46,8 @@ check() {
         fi
         CMD=apt
         cmd_install="apt install -y "
-        cmd_update="apt update; apt upgrade -y"
-        $cmd_update
+        cmd_update="apt update -y; apt upgrade -y"
+        eval $cmd_update
     else
         CMD=yum
         cmd_install="yum install -y "

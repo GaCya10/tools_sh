@@ -12,26 +12,27 @@ if ! which yum 2>/dev/null; then
 		echo "It's not a unix-like system"
 		exit 1
 	fi
-	cmd_install="apt install -y "
-	cmd_update="apt update; apt upgrade -y"
+	cmd_install="sudo apt install -y "
+	cmd_update="sudo apt update; sudo apt upgrade -y"
 	# cmd_remove="apt remove -y "
-	$cmd_update
+	eval $cmd_update
 else
 	# cmd=yum
-	cmd_install="yum install -y "
-	cmd_update="yum update -y"
+	cmd_install="sudo yum install -y "
+	cmd_update="sudo yum update -y"
 	# cmd_remove="yum remove -y "
 	$cmd_update
 	$cmd_install epel-release
 fi
 
 if [ "$OS" = "Amazon" ]; then
-	$cmd_install util-linux-user amazon-linux-extras install epel -y
+	$cmd_install util-linux-user 
+    sudo amazon-linux-extras install epel -y
 fi
 
 __delimiter "preinstall"
 
-$cmd_install wget vim unzip tar gcc
+$cmd_install wget vim unzip tar gcc zsh
 $cmd_install zsh git net-tools openssl curl
 
 __delimiter "install zsh"
@@ -136,6 +137,15 @@ if [ ! -d "$HOME"/.vim/colors ]; then
 fi
 cp molokai/colors/molokai.vim "$HOME"/.vim/colors
 
-sed -i 's/^plugins=(git)$/plugins=(\ngit\nzsh-autosuggestions\nzsh-syntax-highlighting\ngit-open\n)/' "$HOME"/.zshrc
+sudo sed -i 's/^plugins=(git)$/plugins=(\ngit\nzsh-autosuggestions\nzsh-syntax-highlighting\ngit-open\n)/' "$HOME"/.zshrc
+
+sudo sed -i 's/^#Port 22/Port 54321/' /etc/ssh/sshd_config
+sudo sed -i 's/^#ClientAliveInterval.*/ClientAliveInterval 60/' /etc/ssh/sshd_config
+sudo sed -i 's/^#ClientAliveCountMax.*/ClientAliveCountMax 60/' /etc/ssh/sshd_config
+sudo sed -i 's/^#TCPKeepAlive.*/TCPKeepAlive yes/' /etc/ssh/sshd_config
+sudo systemctl restart sshd
+
+sudo sed -i '/^PROMPT/d' ~/.zshrc
+sudo echo 'PROMPT="[%{$fg[white]%}%n@%{$fg[green]%}%m%{$reset_color%}] ${PROMPT}"' >>  "$HOME"/.zshrc
 
 __delimiter "Done"
