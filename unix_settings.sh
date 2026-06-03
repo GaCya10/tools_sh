@@ -13,9 +13,13 @@ if ! which yum 2>/dev/null; then
 		exit 1
 	fi
 	cmd_install="sudo apt install -y "
+<<<<<<< HEAD
 	cmd_update="sudo apt update; apt upgrade -y"
+=======
+	cmd_update="sudo apt update; sudo apt upgrade -y"
+>>>>>>> refs/remotes/origin/master
 	# cmd_remove="apt remove -y "
-	$cmd_update
+	eval $cmd_update
 else
 	# cmd=yum
 	cmd_install="sudo yum install -y "
@@ -143,6 +147,10 @@ sudo sed -i 's/^#Port 22/Port 54321/' /etc/ssh/sshd_config
 sudo sed -i 's/^#ClientAliveInterval.*/ClientAliveInterval 60/' /etc/ssh/sshd_config
 sudo sed -i 's/^#ClientAliveCountMax.*/ClientAliveCountMax 60/' /etc/ssh/sshd_config
 sudo sed -i 's/^#TCPKeepAlive.*/TCPKeepAlive yes/' /etc/ssh/sshd_config
+<<<<<<< HEAD
+=======
+sudo systemctl restart sshd
+>>>>>>> refs/remotes/origin/master
 
 sudo sed -i '/^PROMPT/d' ~/.zshrc
 sudo echo 'PROMPT="[%{$fg[white]%}%n@%{$fg[green]%}%m%{$reset_color%}] ${PROMPT}"' >>  "$HOME"/.zshrc
